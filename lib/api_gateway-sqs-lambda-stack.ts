@@ -2,6 +2,7 @@ import * as cdk from '@aws-cdk/core'
 import * as sqs from '@aws-cdk/aws-sqs'
 import * as lambda from '@aws-cdk/aws-lambda'
 import * as eventSrc from '@aws-cdk/aws-lambda-event-sources'
+import * as apiGw from '@aws-cdk/aws-apigateway'
 
 export class ApiGatewaySqsLambdaStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -24,5 +25,29 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
       memorySize: 256,
     })
     handler.addEventSource(new eventSrc.SqsEventSource(queue, { batchSize: 1 }))
+
+    // API Gateway as a proxy to SQS
+    const api = new apiGw.RestApi(this, 'async-api', {
+      restApiName: 'async-api',
+      endpointTypes: [apiGw.EndpointType.REGIONAL],
+      deployOptions: {
+        stageName: 'dev',
+      },
+    })
+
+    api.addRequestValidator('request-validator', {
+      requestValidatorName: 'request-validator',
+      validateRequestBody: false,
+      validateRequestParameters: true,
+    })
+
+    const sqsIntegration = new apiGw.Integration({
+      type: apiGw.IntegrationType.AWS,
+      integrationHttpMethod: 'POST',
+      uri: `arn:aws:apigateway:${this.region}:sqs:path/${queue.queueName}`,
+      options: {},
+    })
+
+    api.root.addMethod('POST', sqsIntegration, {})
   }
 }
