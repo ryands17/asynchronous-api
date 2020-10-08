@@ -3,6 +3,7 @@ import * as sqs from '@aws-cdk/aws-sqs'
 import * as lambda from '@aws-cdk/aws-lambda'
 import * as eventSrc from '@aws-cdk/aws-lambda-event-sources'
 import * as apiGw from '@aws-cdk/aws-apigateway'
+import * as iam from '@aws-cdk/aws-iam'
 
 export class ApiGatewaySqsLambdaStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -17,12 +18,15 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
 
     // The Lambda function responding to SQS messages
     const handler = new lambda.Function(this, 'request-handler', {
-      runtime: lambda.Runtime.PYTHON_3_8,
+      runtime: lambda.Runtime.NODEJS_12_X,
       code: lambda.Code.fromAsset('resources'),
       handler: 'index.handler',
       reservedConcurrentExecutions: 20,
-      timeout: cdk.Duration.seconds(10),
+      timeout: cdk.Duration.seconds(5),
       memorySize: 256,
+      environment: {
+        QUEUE_URL: queue.queueUrl,
+      },
     })
     handler.addEventSource(new eventSrc.SqsEventSource(queue, { batchSize: 1 }))
 
@@ -32,22 +36,70 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
       endpointTypes: [apiGw.EndpointType.REGIONAL],
       deployOptions: {
         stageName: 'dev',
+        loggingLevel: apiGw.MethodLoggingLevel.INFO,
       },
     })
 
-    api.addRequestValidator('request-validator', {
-      requestValidatorName: 'request-validator',
-      validateRequestBody: false,
-      validateRequestParameters: true,
+    const asyncApiApigRole = new iam.Role(this, 'asyncApiApigRole', {
+      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
     })
+    asyncApiApigRole.addToPolicy(
+      new iam.PolicyStatement({
+        resources: [queue.queueArn],
+        actions: ['sqs:SendMessage'],
+      })
+    )
 
-    const sqsIntegration = new apiGw.Integration({
-      type: apiGw.IntegrationType.AWS,
+    const sqsIntegration = new apiGw.AwsIntegration({
+      service: 'sqs',
       integrationHttpMethod: 'POST',
-      uri: `arn:aws:apigateway:${this.region}:sqs:path/${queue.queueName}`,
-      options: {},
+      options: {
+        passthroughBehavior: apiGw.PassthroughBehavior.NEVER,
+        credentialsRole: asyncApiApigRole,
+        requestParameters: {
+          'integration.request.header.Content-Type': `'application/x-www-form-urlencoded'`,
+        },
+        requestTemplates: {
+          'application/json': 'Action=SendMessage&MessageBody=$input.body',
+          // 'Action=SendMessage&MessageBody=$util.urlEncode("$input.body")',
+        },
+        integrationResponses: [
+          {
+            statusCode: '200',
+            responseTemplates: {
+              'application/json': JSON.stringify({ success: true }),
+            },
+          },
+          {
+            statusCode: '500',
+            responseTemplates: {
+              'application/json': JSON.stringify({
+                success: false,
+                error: 'Server Error!',
+              }),
+            },
+            selectionPattern: '500',
+          },
+        ],
+      },
+      path: `${this.account}/${queue.queueName}`,
     })
 
-    api.root.addMethod('POST', sqsIntegration, {})
+    api.root.addMethod('POST', sqsIntegration, {
+      methodResponses: [
+        {
+          statusCode: '200',
+          responseParameters: {
+            'method.response.header.Content-Type': true,
+          },
+        },
+        {
+          statusCode: '500',
+          responseParameters: {
+            'method.response.header.Content-Type': true,
+          },
+        },
+      ],
+    })
   }
 }
