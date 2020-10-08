@@ -5,6 +5,14 @@ import * as eventSrc from '@aws-cdk/aws-lambda-event-sources'
 import * as apiGw from '@aws-cdk/aws-apigateway'
 import * as iam from '@aws-cdk/aws-iam'
 
+const requestTemplate = [
+  `Action=SendMessage`,
+  `MessageBody=$input.json('$')`,
+  `MessageAttribute.1.Name=requestTime`,
+  `MessageAttribute.1.Value.StringValue=$context.requestTimeEpoch`,
+  `MessageAttribute.1.Value.DataType=String`,
+]
+
 export class ApiGatewaySqsLambdaStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
@@ -60,8 +68,7 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
           'integration.request.header.Content-Type': `'application/x-www-form-urlencoded'`,
         },
         requestTemplates: {
-          'application/json': 'Action=SendMessage&MessageBody=$input.body',
-          // 'Action=SendMessage&MessageBody=$util.urlEncode("$input.body")',
+          'application/json': requestTemplate.join('&'),
         },
         integrationResponses: [
           {
@@ -86,6 +93,23 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
     })
 
     api.root.addMethod('POST', sqsIntegration, {
+      requestValidatorOptions: { validateRequestBody: true },
+      requestModels: {
+        'application/json': new apiGw.Model(this, 'sqs-payload', {
+          restApi: api,
+          schema: {
+            title: 'SQS Payload',
+            type: apiGw.JsonSchemaType.OBJECT,
+            required: ['data'],
+            properties: {
+              data: {
+                type: apiGw.JsonSchemaType.STRING,
+                minLength: 1,
+              },
+            },
+          },
+        }),
+      },
       methodResponses: [
         {
           statusCode: '200',
