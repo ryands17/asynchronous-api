@@ -98,6 +98,7 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
         'application/json': new apiGw.Model(this, 'sqs-payload', {
           restApi: api,
           schema: {
+            schema: apiGw.JsonSchemaVersion.DRAFT4,
             title: 'SQS Payload',
             type: apiGw.JsonSchemaType.OBJECT,
             required: ['data'],

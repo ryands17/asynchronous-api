@@ -5,6 +5,7 @@
 !globals.d.ts
 node_modules
 .env
+.DS_Store
 
 # CDK asset staging directory
 .cdk.staging
