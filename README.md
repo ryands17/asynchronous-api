@@ -1,5 +1,7 @@
 # Asynchronous API handling with API Gateway, SQS and Lambda
 
+![Build Status](https://github.com/ryands17/asynchronous-api/workflows/CI/badge.svg)
+
 This is an [aws-cdk](https://aws.amazon.com/cdk/) project where you can create a highly scalable asynchronous API with API Gateway and SQS which in turn invokes Lambda.
 
 Inspired from [this](https://codeburst.io/100-serverless-asynchronous-api-with-apig-sqs-and-lambda-2506a039b4d) blog post.

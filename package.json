@@ -6,6 +6,10 @@
   "bin": {
     "api_gateway-sqs-lambda": "bin/api_gateway-sqs-lambda.js"
   },
+  "author": {
+    "name": "Ryan Dsouza",
+    "email": "dsouza.ryan.11@gmail.com"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
