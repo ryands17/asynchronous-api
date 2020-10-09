@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
+    "test": "dotenv -- jest",
     "cdk": "dotenv -- cdk"
   },
   "dependencies": {
