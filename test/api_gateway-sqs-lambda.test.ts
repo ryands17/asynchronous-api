@@ -134,6 +134,6 @@ test(`API Gateway 'POST' Method and its corresponding Model (Schema)`, () => {
 function createStack() {
   const app = new cdk.App()
   return new ApiGatewaySqsLambda.ApiGatewaySqsLambdaStack(app, 'AsyncAPI', {
-    env: { region: process.env.REGION, account: process.env.AWS_ACCOUNT },
+    env: { region: process.env.REGION },
   })
 }
