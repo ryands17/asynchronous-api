@@ -84,8 +84,11 @@ test(`API Gateway 'POST' Method and its corresponding Model (Schema)`, () => {
           },
         ],
         RequestParameters: {
-          'integration.request.header.Content-Type':
-            "'application/x-www-form-urlencoded'",
+          'integration.request.header.Content-Type': "'application/json'",
+        },
+        RequestTemplates: {
+          'application/json':
+            "$context.requestOverride.querystring.MessageBody=$input.json('$')",
         },
         Type: 'AWS',
       },

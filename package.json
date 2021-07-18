@@ -44,6 +44,7 @@
     "arrowParens": "avoid"
   },
   "lint-staged": {
-    "*.{js,ts,json,md}": "prettier --write"
+    "*.{js,ts,json,md}": "prettier --write",
+    "*.{js,ts}": "yarn test"
   }
 }

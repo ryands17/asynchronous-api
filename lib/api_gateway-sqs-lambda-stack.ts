@@ -5,14 +5,6 @@ import * as eventSrc from '@aws-cdk/aws-lambda-event-sources'
 import * as apiGw from '@aws-cdk/aws-apigateway'
 import * as iam from '@aws-cdk/aws-iam'
 
-const requestTemplate = [
-  `Action=SendMessage`,
-  `MessageBody=$input.json('$')`,
-  `MessageAttribute.1.Name=requestTime`,
-  `MessageAttribute.1.Value.StringValue=$context.requestTimeEpoch`,
-  `MessageAttribute.1.Value.DataType=String`,
-]
-
 export class ApiGatewaySqsLambdaStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
@@ -43,6 +35,10 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
         stageName: 'dev',
         loggingLevel: apiGw.MethodLoggingLevel.INFO,
       },
+      defaultCorsPreflightOptions: {
+        allowOrigins: ['*'],
+        allowMethods: ['POST'],
+      },
     })
 
     const asyncApiApigRole = new iam.Role(this, 'asyncApiApigRole', {
@@ -57,13 +53,15 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
 
     const sqsIntegration = new apiGw.AwsIntegration({
       service: 'sqs',
+      action: 'SendMessage',
       options: {
         credentialsRole: asyncApiApigRole,
         requestParameters: {
-          'integration.request.header.Content-Type': `'application/x-www-form-urlencoded'`,
+          'integration.request.header.Content-Type': `'application/json'`,
+          'integration.request.querystring.QueueUrl': `'${queue.queueUrl}'`,
         },
         requestTemplates: {
-          'application/json': requestTemplate.join('&'),
+          'application/json': `$context.requestOverride.querystring.MessageBody=$input.json('$')`,
         },
         integrationResponses: [
           {
@@ -84,7 +82,6 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
           },
         ],
       },
-      path: `${this.account}/${queue.queueName}`,
     })
 
     api.root.addMethod('POST', sqsIntegration, {
