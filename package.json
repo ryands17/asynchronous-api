@@ -14,8 +14,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "dotenv -- jest",
-    "cdk": "dotenv -- cdk",
-    "postinstall": "husky install"
+    "cdk": "dotenv -- cdk"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "1.111.0",

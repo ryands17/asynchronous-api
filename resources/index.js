@@ -1,9 +1,3 @@
-const AWS = require('aws-sdk')
-
-const sqs = new AWS.SQS({
-  region: process.env.AWS_REGION,
-})
-
 exports.handler = async event => {
   try {
     for (let message of event.Records) {
@@ -11,7 +5,6 @@ exports.handler = async event => {
       console.log('[main message]', message)
       console.log('*'.repeat(20))
       console.log('body', JSON.parse(message.body, null, 2))
-      await deleteMessageFromQueue(message.receiptHandle)
     }
 
     return {
@@ -24,16 +17,5 @@ exports.handler = async event => {
       statusCode: 500,
       error: JSON.stringify('Server error!'),
     }
-  }
-}
-
-function deleteMessageFromQueue(receiptHandle) {
-  if (receiptHandle) {
-    return sqs
-      .deleteMessage({
-        QueueUrl: process.env.QUEUE_URL,
-        ReceiptHandle: receiptHandle,
-      })
-      .promise()
   }
 }

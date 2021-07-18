@@ -26,15 +26,12 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
 
     // The Lambda function responding to SQS messages
     const handler = new lambda.Function(this, 'request-handler', {
-      runtime: lambda.Runtime.NODEJS_12_X,
+      runtime: lambda.Runtime.NODEJS_14_X,
       code: lambda.Code.fromAsset('resources'),
       handler: 'index.handler',
-      reservedConcurrentExecutions: 20,
+      reservedConcurrentExecutions: 5,
       timeout: cdk.Duration.seconds(5),
       memorySize: 256,
-      environment: {
-        QUEUE_URL: queue.queueUrl,
-      },
     })
     handler.addEventSource(new eventSrc.SqsEventSource(queue, { batchSize: 1 }))
 
@@ -60,9 +57,8 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
 
     const sqsIntegration = new apiGw.AwsIntegration({
       service: 'sqs',
-      integrationHttpMethod: 'POST',
+      action: 'SendMessage',
       options: {
-        passthroughBehavior: apiGw.PassthroughBehavior.NEVER,
         credentialsRole: asyncApiApigRole,
         requestParameters: {
           'integration.request.header.Content-Type': `'application/x-www-form-urlencoded'`,

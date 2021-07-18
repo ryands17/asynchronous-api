@@ -1,4 +1,7 @@
 {
+  "ts-node": {
+    "files": true
+  },
   "compilerOptions": {
     "target": "ES2018",
     "module": "commonjs",
@@ -17,7 +20,8 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types", "globals.d.ts"],
+    "skipLibCheck": true
   },
   "exclude": ["cdk.out"]
 }
