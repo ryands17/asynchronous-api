@@ -57,7 +57,6 @@ export class ApiGatewaySqsLambdaStack extends cdk.Stack {
 
     const sqsIntegration = new apiGw.AwsIntegration({
       service: 'sqs',
-      action: 'SendMessage',
       options: {
         credentialsRole: asyncApiApigRole,
         requestParameters: {

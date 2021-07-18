@@ -15,14 +15,9 @@ test('SQS Queue, Lambda Handler, and the corresponding Event Source', () => {
   expectCDK(stack).to(
     haveResourceLike('AWS::Lambda::Function', {
       Handler: 'index.handler',
-      Runtime: 'nodejs12.x',
-      Environment: {
-        Variables: {
-          QUEUE_URL: {},
-        },
-      },
+      Runtime: 'nodejs14.x',
       MemorySize: 256,
-      ReservedConcurrentExecutions: 20,
+      ReservedConcurrentExecutions: 5,
       Timeout: 5,
     })
   )
@@ -88,7 +83,6 @@ test(`API Gateway 'POST' Method and its corresponding Model (Schema)`, () => {
             StatusCode: '500',
           },
         ],
-        PassthroughBehavior: 'NEVER',
         RequestParameters: {
           'integration.request.header.Content-Type':
             "'application/x-www-form-urlencoded'",
