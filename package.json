@@ -17,18 +17,18 @@
     "cdk": "dotenv -- cdk"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "1.167.0",
-    "@aws-cdk/aws-lambda": "1.167.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.167.0",
-    "@aws-cdk/aws-sqs": "1.167.0",
-    "@aws-cdk/core": "1.167.0",
+    "@aws-cdk/aws-apigateway": "1.171.0",
+    "@aws-cdk/aws-lambda": "1.171.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.171.0",
+    "@aws-cdk/aws-sqs": "1.171.0",
+    "@aws-cdk/core": "1.171.0",
     "source-map-support": "0.5.21"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.167.0",
+    "@aws-cdk/assert": "1.171.0",
     "@types/jest": "27.5.2",
     "@types/node": "16.11.57",
-    "aws-cdk": "1.167.0",
+    "aws-cdk": "1.171.0",
     "dotenv-cli": "5.1.0",
     "husky": "7.0.4",
     "jest": "27.5.1",
